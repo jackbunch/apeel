@@ -6,7 +6,7 @@ import struct
 # This code can be used to extract ground truth values from 'SourceData'
 # from Felix Instruments' app building software
 
-df = pd.read_csv("AppBuilderProject_SourceData.csv") #CSV exported from AppBuilder
+df = pd.read_csv("AppBuilderProject_SourceData.csv") # CSV exported from AppBuilder
 
 # dry matter
 dms_total = 0
