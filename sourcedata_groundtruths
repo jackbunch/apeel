@@ -12,7 +12,7 @@ df = pd.read_csv("AppBuilderProject_SourceData.csv") #CSV exported from AppBuild
 dms_total = 0
 dms = [0]*5504
 
-for file in os.listdir('SourceData'):
+for file in os.listdir('SourceData'): # Default 'SourceData' folder of f750dat files
     with open('SourceData/'+str(file), 'r+b') as f:
         fdata = f.read()
         search = b"\x02DM"
