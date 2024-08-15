@@ -1,0 +1,85 @@
+import pandas as pd
+import numpy as np
+import os
+import struct
+
+# This code can be used to extract ground truth values from 'SourceData'
+# from Felix Instruments' app building software
+
+df = pd.read_csv("AppBuilderProject_SourceData.csv") #CSV exported from AppBuilder
+
+# dry matter
+dms_total = 0
+dms = [0]*5504
+
+for file in os.listdir('SourceData'):
+    with open('SourceData/'+str(file), 'r+b') as f:
+        fdata = f.read()
+        search = b"\x02DM"
+        x = fdata.find(search)
+        dm = 0
+        if x == 17888:
+            dm = struct.unpack_from('<f', fdata[x+3:x+7])[0]
+        if x >= 4200 and x <= 4400:
+            dm = struct.unpack_from('<f', fdata[x+7:x+11])[0]
+        if dm > 5 and dm < 100:
+            dms_total += 1
+        elif dm != 0:
+            dm = 0
+        row = np.where(df["Tags"].str.contains(str(file)))[0]
+        dms[int(row)] = dm
+
+df.insert(0, "dry matter (%)", pd.Series(dms, index=(range(0,5504))))
+
+# brix
+brixs_total = 0
+brixs = [0]*5504
+
+for file in os.listdir('SourceData'):
+    with open('SourceData/'+str(file), 'r+b') as f:
+        fdata = f.read()
+        search = b"\x04Brix"
+        x = fdata.find(search)
+        brix = 0
+        if x != -1 and x != 4302 and x != 4301:
+            brix = struct.unpack_from('<f', fdata[x+5:x+9])[0]
+        if brix > 5 and brix < 100:
+            brixs_total += 1
+        elif brix != 0:
+            brix = 0
+        row = np.where(df["Tags"].str.contains(str(file)))[0]
+        brixs[int(row)] = brix
+
+df.insert(1, "brix", pd.Series(brixs, index=(range(0,5504))))
+
+df.to_csv("SourceData.csv", index=False)
+
+# Don't forget to delete the one duplicate spectra!
+# SourceDataID: 2bedc242-055e-609b-5ba6-91219aa7233f
+
+
+
+
+# Optional info to print
+
+dms_real = [x for x in dms if x != 0]
+brixs_real = [x for x in brixs if x != 0]
+
+print(len(dms))
+print(len(dms_real))
+print(len(brixs))
+print(len(brixs_real))
+print(len(df))
+
+print('dm total: ' + str(dms_total))
+print('min: ' + str(min(dms_real)))
+print('max: ' + str(max(dms_real)))
+print('avg: ' + str(sum(dms_real)/len(dms_real)))
+
+print('brix total: ' + str(brixs_total))
+print('min: ' + str(min(brixs_real)))
+print('max: ' + str(max(brixs_real)))
+print('avg: ' + str(sum(brixs_real)/len(brixs_real)))
+
+# Manually read bytes
+# print(struct.unpack_from('<f', b"'\<bytes>")[0])
